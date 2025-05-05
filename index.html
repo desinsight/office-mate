@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>오피스메이트 - 오피스텔 관리 자동화 솔루션</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css"/>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: #f8fafc;
+      color: #1A2B4B;
+    }
+    .glass {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 2px 22px 0 rgba(16,30,54,0.07);
+      border-radius: 1rem;
+    }
+    /* For scrollbar hiding */
+    ::-webkit-scrollbar { width: 0; background: transparent; }
+    /* For glassmorphism card shadow */
+    .shadow-glass { box-shadow: 0 6px 24px 0 rgba(16, 30, 54, 0.13);}
+    @media print {
+      body {
+        background: #fff!important;
+      }
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #3A86FF 0%, #00AAFF 100%);
+    }
+    .icon-style {
+      color: #3A86FF;
+      font-size: 2.2rem;
+      background: rgba(58,134,255,0.07);
+      padding: 0.85rem;
+      border-radius: 0.9rem;
+      display: inline-flex;
+    }
+    .dashboard-menu-item {
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .dashboard-menu-item:hover {
+      background-color: rgba(58,134,255,0.1);
+    }
+    .dashboard-menu-item.active {
+      background-color: rgba(58,134,255,0.2);
+      border-left: 4px solid #3A86FF;
+    }
+  </style>
+</head>
+<body class="antialiased"> 
+  <!-- Navbar -->
+  <nav class="fixed w-full z-20 top-0 left-0 transition backdrop-blur-sm">
+    <div class="max-w-7xl mx-auto flex items-center justify-between px-6 py-4 glass shadow-glass mt-2">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-building-columns text-2xl text-blue-500"></i>
+        <span class="font-bold text-xl tracking-tight text-blue-700">오피스메이트</span>
+      </div>
+      <div class="space-x-8 hidden md:flex text-base font-medium">
+        <a href="#dashboard" class="hover:text-blue-500 transition">대시보드</a>
+        <a href="#financial" class="hover:text-blue-500 transition">재정 관리</a>
+        <a href="#tenants" class="hover:text-blue-500 transition">입주자 관리</a>
+        <a href="#contracts" class="hover:text-blue-500 transition">계약 관리</a>
+        <a href="#reports" class="hover:text-blue-500 transition">보고서</a>
+      </div>
+      <div class="space-x-1">
+        <a href="#" class="rounded-lg px-4 py-2 text-blue-600 font-semibold hover:bg-blue-50 transition">관리자님</a>
+        <a href="#" class="rounded-lg px-4 py-2 gradient-bg text-white font-semibold ml-1 shadow-md hover:opacity-90 transition">로그아웃</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Dashboard Container -->
+  <div class="pt-24 pb-16">
+    <div class="max-w-7xl mx-auto px-4">
+      <!-- Admin Header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-blue-800">관리자 대시보드</h1>
+        <p class="text-gray-600 mt-2">강남 센트럴 오피스텔 - 122세대 관리 현황</p>
+      </div>
+
+      <!-- Dashboard Main Area -->
+      <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Left Sidebar Menu -->
+        <aside class="bg-white rounded-2xl w-full max-w-xs min-w-[230px] shadow-xl py-8 px-5 mr-0 lg:mr-4">
+          <div class="mb-8">
+            <div class="flex items-center space-x-4 mb-6">
+              <img src="https://dummyimage.com/64x64/3A86FF/fff&text=관리" class="rounded-full border-4 border-blue-100" alt="관리자 프로필 이미지">
+              <div>
+                <div class="font-semibold text-lg">홍길동 님</div>
+                <div class="text-sm text-gray-500">최고 관리자</div>
+              </div>
+            </div>
+            <div class="flex space-x-2 text-xs text-gray-500">
+              <span><i class="fa-regular fa-calendar"></i> 2024년 4월 17일</span>
+              <span class="text-blue-500"><i class="fa-solid fa-circle text-xs"></i> 온라인</span>
+            </div>
+          </div>
+          
+          <nav class="space-y-1 font-medium text-base">
+            <div id="menu-dashboard" class="dashboard-menu-item active flex items-center space-x-3 py-3 px-4 rounded-lg">
+              <i class="fa-solid fa-gauge-high text-blue-500"></i>
+              <span>메인 대시보드</span>
+            </div>
+            <div id="menu-financial" class="dashboard-menu-item flex items-center space-x-3 py-3 px-4 rounded-lg">
+              <i class="fa-solid fa-coins text-blue-500"></i>
+              <span>자금 흐름 관리</span>
+            </div>
+            <div id="menu-tenants" class="dashboard-menu-item flex items-center space-x-3 py-3 px-4 rounded-lg">
+              <i class="fa-solid fa-users text-blue-500"></i>
+              <span>입주자 관리</span>
+            </div>
+            <div id="menu-contracts" class="dashboard-menu-item flex items-center space-x-3 py-3 px-4 rounded-lg">
+              <i class="fa-solid fa-file-signature text-blue-500"></i>
+              <span>계약 관리</span>
+            </div>
+            <div id="menu-maintenance" class="dashboard-menu-item flex items-center space-x-3 py-3 px-4 rounded-lg">
+              <i class="fa-solid fa-screwdriver-wrench text-blue-500"></i>
+              <span>시설 관리</span>
+            </div>
+            <div id="menu-reports" class="dashboard-menu-item flex items-center space-x-3 py-3 px-4 rounded-lg">
+              <i class="fa-solid fa-chart-pie text-blue-500"></i>
+              <span>보고서</span>
+            </div>
+            <div id="menu-settings" class="dashboard-menu-item flex items-center space-x-3 py-3 px-4 rounded-lg">
+              <i class="fa-solid fa-gear text-blue-500"></i>
+              <span>설정</span>
+            </div>
+            <hr class="my-4 border-gray-200">
+            <div class="flex items-center space-x-3 py-3 px-4 rounded-lg text-red-500 cursor-pointer">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>로그아웃</span>
+            </div>
+          </nav>
+        </aside>
+
+        <!-- Main Dashboard Content -->
+        <main class="flex-1" id="dashboard">
+          <!-- Top Stats Overview -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="glass shadow-glass p-6 rounded-xl flex flex-col items-start">
+              <div class="text-sm text-gray-500 mb-1">이번달 총 수입</div>
+              <div class="font-bold text-2xl text-blue-500 mb-2">₩78,450,000</div>
+              <div class="flex items-center text-sm">
+                <span class="text-green-500 mr-1"><i class="fa-solid fa-arrow-up"></i> 2.4%</span>
+                <span class="text-gray-500">전월 대비</span>
+              </div>
+              <canvas id="incomeChart" class="w-full h-10 mt-2"></canvas>
+            </div>
+            <div class="glass shadow-glass p-6 rounded-xl flex flex-col items-start">
+              <div class="text-sm text-gray-500 mb-1">이번달 총 지출</div>
+              <div class="font-bold text-2xl text-red-500 mb-2">₩12,380,000</div>
+              <div class="flex items-center text-sm">
+                <span class="text-green-500 mr-1"><i class="fa-solid fa-arrow-down"></i> 5.1%</span>
+                <span class="text-gray-500">전월 대비</span>
+              </div>
+              <canvas id="expenseChart" class="w-full h-10 mt-2"></canvas>
+            </div>
+            <div class="glass shadow-glass p-6 rounded-xl flex flex-col items-start">
+              <div class="text-sm text-gray-500 mb-1">수납율</div>
+              <div class="font-bold text-2xl text-green-500 mb-2">96.8%</div>
+              <div class="flex items-center text-sm">
+                <span class="text-green-500 mr-1"><i class="fa-solid fa-arrow-up"></i> 1.2%</span>
+                <span class="text-gray-500">전월 대비</span>
+              </div>
+              <canvas id="collectionRateChart" class="w-full h-10 mt-2"></canvas>
+            </div>
+            <div class="glass shadow-glass p-6 rounded-xl flex flex-col items-start">
+              <div class="text-sm text-gray-500 mb-1">미납 총액</div>
+              <div class="font-bold text-2xl text-yellow-500 mb-2">₩3,250,000</div>
+              <div class="flex items-center text-sm">
+                <span class="text-red-500 mr-1"><i class="fa-solid fa-arrow-up"></i> 0.8%</span>
+                <span class="text-gray-500">전월 대비</span>
+              </div>
+              <canvas id="unpaidChart" class="w-full h-10 mt-2"></canvas>
+            </div>
+          </div>
+
+          <!-- Financial Flow Analysis -->
+          <section id="financial" class="mb-8">
+            <h2 class="text-xl font-bold mb-4 text-blue-800">자금 흐름 분석</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <!-- Main Revenue Chart -->
+              <div class="glass shadow-glass rounded-xl p-6 col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="font-semibold text-blue-700">월별 수입/지출 추이</h3>
+                  <div class="flex space-x-2">
+                    <button class="px-3 py-1 rounded bg-blue-50 text-blue-500 text-sm">연간</button>
+                    <button class="px-3 py-1 rounded bg-blue-500 text-white text-sm">6개월</button>
+                    <button class="px-3 py-1 rounded bg-blue-50 text-blue-500 text-sm">3개월</button>
+                  </div>
+                </div>
+                <canvas id="revenueExpenseChart" height="200"></canvas>
+              </div>
+              
+              <!-- Income Breakdown -->
+              <div class="glass shadow-glass rounded-xl p-6">
+                <h3 class="font-semibold text-blue-700 mb-4">수입 구성</h3>
+                <canvas id="incomeBreakdownChart" height="180"></canvas>
+                <div class="grid grid-cols-2 gap-2 mt-4 text-sm">
+                  <div class="flex items-center">
+                    <span class="w-3 h-3 rounded-full bg-blue-500 mr-2"></span>
+                    <span>임대료 (82%)</span>
+                  </div>
+                  <div class="flex items-center">
+                    <span class="w-3 h-3 rounded-full bg-green-400 mr-2"></span>
+                    <span>관리비 (12%)</span>
+                  </div>
+                  <div class="flex items-center">
+                    <span class="w-3 h-3 rounded-full bg-yellow-400 mr-2"></span>
+                    <span>주차료 (4%)</span>
+                  </div>
+                  <div class="flex items-center">
+                    <span class="w-3 h-3 rounded-full bg-purple-400 mr-2"></span>
+                    <span>기타 (2%)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Financial Tables -->
+          <section class="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Unpaid List -->
+            <div class="glass shadow-glass rounded-xl p-6">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="font-semibold text-blue-700">미납 현황</h3>
+                <button class="text-blue-500 text-sm">모두 보기</button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                  <thead>
+                    <tr class="bg-blue-50 text-blue-800">
+                      <th class="py-2 px-4 text-left rounded-l-lg">호실</th>
+                      <th class="py-2 px-4 text-left">입주자</th>
+                      <th class="py-2 px-4 text-left">미납액</th>
+                      <th class="py-2 px-4 text-left">미납기간</th>
+                      <th class="py-2 px-4 text-left rounded-r-lg">상태</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    <tr>
+                      <td class="py-3 px-4">703호</td>
+                      <td class="py-3 px-4">김민수</td>
+                      <td class="py-3 px-4">₩750,000</td>
+                      <td class="py-3 px-4">2개월</td>
+                      <td class="py-3 px-4"><span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">연체</span></td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4">1204호</td>
+                      <td class="py-3 px-4">이지연</td>
+                      <td class="py-3 px-4">₩680,000</td>
+                      <td class="py-3 px-4">1개월</td>
+                      <td class="py-3 px-4"><span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">1차 통보</span></td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4">512호</td>
+                      <td class="py-3 px-4">박준호</td>
+                      <td class="py-3 px-4">₩640,000</td>
+                      <td class="py-3 px-4">1개월</td>
+                      <td class="py-3 px-4"><span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">1차 통보</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <!-- Recent Transactions -->
+            <div class="glass shadow-glass rounded-xl p-6">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="font-semibold text-blue-700">최근 거래 내역</h3>
+                <button class="text-blue-500 text-sm">모두 보기</button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                  <thead>
+                    <tr class="bg-blue-50 text-blue-800">
+                      <th class="py-2 px-4 text-left rounded-l-lg">날짜</th>
+                      <th class="py-2 px-4 text-left">내역</th>
+                      <th class="py-2 px-4 text-left">호실</th>
+                      <th class="py-2 px-4 text-left rounded-r-lg">금액</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    <tr>
+                      <td class="py-3 px-4">2024-04-15</td>
+                      <td class="py-3 px-4">임대료 입금</td>
+                      <td class="py-3 px-4">801호</td>
+                      <td class="py-3 px-4 text-green-600">+₩700,000</td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4">2024-04-14</td>
+                      <td class="py-3 px-4">관리비 입금</td>
+                      <td class="py-3 px-4">1105호</td>
+                      <td class="py-3 px-4 text-green-600">+₩120,000</td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4">2024-04-13</td>
+                      <td class="py-3 px-4">시설 보수 비용</td>
+                      <td class="py-3 px-4">공용</td>
+                      <td class="py-3 px-4 text-red-600">-₩450,000</td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4">2024-04-12</td>
+                      <td class="py-3 px-4">임대료 입금</td>
+                      <td class="py-3 px-4">502호</td>
+                      <td class="py-3 px-4 text-green-600">+₩650,000</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- Tenant Management -->
+          <section id="tenants" class="mb-8">
+            <h2 class="text-xl font-bold mb-4 text-blue-800">입주자 관리</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <!-- Tenant Overview -->
+              <div class="glass shadow-glass rounded-xl p-6 col-span-1">
+                <h3 class="font-semibold text-blue-700 mb-4">입주자 현황</h3>
+                <div class="space-y-4">
+                  <div class="flex justify-between items-center">
+                    <span class="text-gray-600">총 세대수</span>
+                    <span class="font-semibold">122세대</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-gray-600">입주 세대</span>
+                    <span class="font-semibold">117세대 (95.9%)</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-gray-600">공실</span>
+                    <span class="font-semibold">5세대 (4.1%)</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-gray-600">만료 임박</span>
+                    <span class="font-semibold text-yellow-500">8세대</span>
+                  </div>
+                </div>
+                <canvas id="tenantStatusChart" class="mt-6" height="180"></canvas>
+              </div>
+              
+              <!-- Tenant Satisfaction -->
+              <div class="glass shadow-glass rounded-xl p-6 col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="font-semibold text-blue-700">입주자 만족도 추이</h3>
+                  <div class="text-xs text-gray-500">
+                    설문 응답률: 72% (84/117)
+                  </div>
+                </div>
+                <canvas id="satisfactionChart" height="200"></canvas>
+                <div class="grid grid-cols-3 gap-4 mt-4">
+                  <div class="bg-blue-50 rounded-lg p-3 text-center">
+                    <div class="text-xl font-bold text-blue-600">4.2/5</div>
+                    <div class="text-xs text-gray-600">시설 만족도</div>
+                  </div>
+                  <div class="bg-blue-50 rounded-lg p-3 text-center">
+                    <div class="text-xl font-bold text-blue-600">4.5/5</div>
+                    <div class="text-xs text-gray-600">관리자 응대</div>
+                  </div>
+                  <div class="bg-blue-50 rounded-lg p-3 text-center">
+                    <div class="text-xl font-bold text-blue-600">4.1/5</div>
+                    <div class="text-xs text-gray-600">청결도</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Tenant Directory -->
+            <div class="glass shadow-glass rounded-xl p-6 mt-6">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="font-semibold text-blue-700">입주자 목록</h3>
+                <div class="flex items-center">
+                  <div class="relative mr-4">
+                    <input type="text" placeholder="입주자 검색..." class="pl-8 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    <i class="fa-solid fa-search absolute left-3 top-3 text-gray-400"></i>
+                  </div>
+                  <button class="px-3 py-2 bg-blue-500 text-white rounded-lg text-sm"><i class="fa-solid fa-plus mr-1"></i> 입주자 추가</button>
+                </div>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                  <thead>
+                    <tr class="bg-blue-50 text-blue-800">
+                      <th class="py-3 px-4 text-left rounded-l-lg">호실</th>
+                      <th class="py-3 px-4 text-left">입주자</th>
+                      <th class="py-3 px-4 text-left">연락처</th>
+                      <th class="py-3 px-4 text-left">계약 시작일</th>
+                      <th class="py-3 px-4 text-left">계약 만료일</th>
+                      <th class="py-3 px-4 text-left">상태</th>
+                      <th class="py-3 px-4 text-left rounded-r-lg">관리</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    <tr>
+                      <td class="py-3 px-4">504호</td>
+                      <td class="py-3 px-4">이지은</td>
+                      <td class="py-3 px-4">010-1234-5678</td>
+                      <td class="py-3 px-4">2023-01-15</td>
+                      <td class="py-3 px-4">2025-01-15</td>
+                      <td class="py-3 px-4"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">정상</span></td>
+                      <td class="py-3 px-4 flex space-x-2">
+                        <button class="p-1 text-blue-500" title="상세 보기"><i class="fa-solid fa-eye"></i></button>
+                        <button class="p-1 text-yellow-500" title="수정하기"><i class="fa-solid fa-pen"></i></button>
+                        <button class="p-1 text-red-500" title="메시지 보내기"><i class="fa-solid fa-message"></i></button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4">803호</td>
+                      <td class="py-3 px-4">---</td>
+                      <td class="py-3 px-4">---</td>
+                      <td class="py-3 px-4">---</td>
+                      <td class="py-3 px-4">---</td>
+                      <td class="py-3 px-4"><span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">공실</span></td>
+                      <td class="py-3 px-4 flex space-x-2">
+                        <button class="p-1 text-blue-500" title="상세 보기"><i class="fa-solid fa-eye"></i></button>
+                        <button class="p-1 text-green-500" title="입주자 추가"><i class="fa-solid fa-plus"></i></button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4">1203호</td>
+                      <td class="py-3 px-4">정성호</td>
+                      <td class="py-3 px-4">010-9876-5432</td>
+                      <td class="py-3 px-4">2022-12-20</td>
+                      <td class="py-3 px-4">2024-12-20</td>
+                      <td class="py-3 px-4"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">정상</span></td>
+                      <td class="py-3 px-4 flex space-x-2">
+                        <button class="p-1 text-blue-500" title="상세 보기"><i class="fa-solid fa-eye"></i></button>
+                        <button class="p-1 text-yellow-500" title="수정하기"><i class="fa-solid fa-pen"></i></button>
+                        <button class="p-1 text-red-500" title="메시지 보내기"><i class="fa-solid fa-message"></i></button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4">1305호</td>
+                      <td class="py-3 px-4">박지현</td>
+                      <td class="py-3 px-4">010-2345-6789</td>
+                      <td class="py-3 px-4">2023-04-28</td>
+                      <td class="py-3 px-4">2024-04-28</td>
+                      <td class="py-3 px-4"><span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">만료임박</span></td>
+                      <td class="py-3 px-4 flex space-x-2">
+                        <button class="p-1 text-blue-500" title="상세 보기"><i class="fa-solid fa-eye"></i></button>
+                        <button class="p-1 text-yellow-500" title="수정하기"><i class="fa-solid fa-pen"></i></button>
+                        <button class="p-1 text-red-500" title="메시지 보내기"><i class="fa-solid fa-message"></i></button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4">227호</td>
+                      <td class="py-3 px-4">최수희</td>
+                      <td class="py-3 px-4">010-3456-7890</td>
+                      <td class="py-3 px-4">2022-11-07</td>
+                      <td class="py-3 px-4">2024-11-07</td>
+                      <td class="py-3 px-4"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">정상</span></td>
+                      <td class="py-3 px-4 flex space-x-2">
+                        <button class="p-1 text-blue-500" title="상세 보기"><i class="fa-solid fa-eye"></i></button>
+                        <button class="p-1 text-yellow-500" title="수정하기"><i class="fa-solid fa-pen"></i></button>
+                        <button class="p-1 text-red-500" title="메시지 보내기"><i class="fa-solid fa-message"></i></button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="mt-4 flex justify-between items-center">
+                <span class="text-sm text-gray-500">총 117명의 입주자 중 1-5 표시</span>
+                <div class="flex space-x-1">
+                  <button class="w-8 h-8 flex items-center justify-center rounded bg-blue-500 text-white">1</button>
+                  <button class="w-8 h-8 flex items-center justify-center rounded bg-white text-blue-500 border border-gray-200">2</button>
+                  <button class="w-8 h-8 flex items-center justify-center rounded bg-white text-blue-500 border border-gray-200">3</button>
+                  <button class="w-8 h-8 flex items-center justify-center rounded bg-white text-blue-500 border border-gray-200">&gt;</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Contract Management -->
+          <section id="contracts" class="mb-8">
+            <h2 class="text-xl font-bold mb-4 text-blue-800">계약 관리</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <!-- Expiring Contracts -->
+              <div class="glass shadow-glass rounded-xl p-6 col-span-1">
+                <h3 class="font-semibold text-blue-700 mb-4">만료 예정 계약</h3>
+                <ul class="divide-y divide-gray-100">
+                  <li class="py-3 flex flex-col">
+                    <div class="flex justify-between">
+                      <span class="font-semibold">1305호 박지현</span>
+                      <span class="text-red-500 text-xs bg-red-50 px-2 py-1 rounded">D-11일</span>
+                    </div>
+                    <div class="text-sm text-gray-600">2024-04-28 만료</div>
+                    <div class="mt-2 flex space-x-2">
+                      <button class="px-3 py-1 text-xs bg-blue-500 text-white rounded" title="계약 갱신 요청">갱신 요청</button>
+                      <button class="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded" title="알림 메시지 전송">알림 전송</button>
+                    </div>
+                  </li>
+                  <li class="py-3 flex flex-col">
+                    <div class="flex justify-between">
+                      <span class="font-semibold">602호 김재원</span>
+                      <span class="text-yellow-500 text-xs bg-yellow-50 px-2 py-1 rounded">D-23일</span>
+                    </div>
+                    <div class="text-sm text-gray-600">2024-05-10 만료</div>
+                    <div class="mt-2 flex space-x-2">
+                      <button class="px-3 py-1 text-xs bg-blue-500 text-white rounded" title="계약 갱신 요청">갱신 요청</button>
+                      <button class="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded" title="알림 메시지 전송">알림 전송</button>
+                    </div>
+                  </li>
+                  <li class="py-3 flex flex-col">
+                    <div class="flex justify-between">
+                      <span class="font-semibold">908호 이현우</span>
+                      <span class="text-yellow-500 text-xs bg-yellow-50 px-2 py-1 rounded">D-34일</span>
+                    </div>
+                    <div class="text-sm text-gray-600">2024-05-21 만료</div>
+                    <div class="mt-2 flex space-x-2">
+                      <button class="px-3 py-1 text-xs bg-blue-500 text-white rounded" title="계약 갱신 요청">갱신 요청</button>
+                      <button class="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded" title="알림 메시지 전송">알림 전송</button>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              
+              <!-- Contract Statistics -->
+              <div class="glass shadow-glass rounded-xl p-6 col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="font-semibold text-blue-700">계약 통계</h3>
+                  <div class="text-sm text-gray-500">최근 업데이트: 2024년 4월 17일</div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 class="text-sm font-medium text-gray-600 mb-2">계약 기간별 분포</h4>
+                    <canvas id="contractTermChart" height="180"></canvas>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-medium text-gray-600 mb-2">월별 계약 만료 예정</h4>
+                    <canvas id="contractExpiryChart" height="180"></canvas>
+                  </div>
+                </div>
+                <div class="mt-4 grid grid-cols-3 gap-4">
+                  <div class="bg-blue-50 p-3 rounded-lg">
+                    <div class="text-sm text-gray-600">전체 계약 수</div>
+                    <div class="text-xl font-bold text-blue-600">117건</div>
+                  </div>
+                  <div class="bg-blue-50 p-3 rounded-lg">
+                    <div class="text-sm text-gray-600">평균 계약 기간</div>
+                    <div class="text-xl font-bold text-blue-600">1.8년</div>
+                  </div>
+                  <div class="bg-blue-50 p-3 rounded-lg">
+                    <div class="text-sm text-gray-600">갱신율</div>
+                    <div class="text-xl font-bold text-blue-600">76.4%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Maintenance Management -->
+          <section id="maintenance" class="mb-8">
+            <h2 class="text-xl font-bold mb-4 text-blue-800">시설 관리 현황</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Service Requests -->
+              <div class="glass shadow-glass rounded-xl p-6">
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="font-semibold text-blue-700">민원/요청 현황</h3>
+                  <div class="flex space-x-2">
+                    <button class="px-3 py-1 rounded bg-blue-500 text-white text-sm" title="전체 민원 보기">전체</button>
+                    <button class="px-3 py-1 rounded bg-blue-50 text-blue-500 text-sm" title="미처리 민원 보기">미처리</button>
+                    <button class="px-3 py-1 rounded bg-blue-50 text-blue-500 text-sm" title="완료된 민원 보기">완료</button>
+                  </div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-sm">
+                    <thead>
+                      <tr class="bg-blue-50 text-blue-800">
+                        <th class="py-2 px-4 text-left rounded-l-lg">호실</th>
+                        <th class="py-2 px-4 text-left">요청내용</th>
+                        <th class="py-2 px-4 text-left">요청일</th>
+                        <th class="py-2 px-4 text-left rounded-r-lg">상태</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                      <tr class="bg-yellow-50">
+                        <td class="py-3 px-4">504호</td>
+                        <td class="py-3 px-4">도어락 배터리 교체 요청</td>
+                        <td class="py-3 px-4">2024-04-16</td>
+                        <td class="py-3 px-4"><span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">대기중</span></td>
+                      </tr>
+                      <tr>
+                        <td class="py-3 px-4">803호</td>
+                        <td class="py-3 px-4">욕실 수전 누수</td>
+                        <td class="py-3 px-4">2024-04-14</td>
+                        <td class="py-3 px-4"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">완료</span></td>
+                      </tr>
+                      <tr class="bg-yellow-50">
+                        <td class="py-3 px-4">227호</td>
+                        <td class="py-3 px-4">공용 복도 전구 교체</td>
+                        <td class="py-3 px-4">2024-04-15</td>
+                        <td class="py-3 px-4"><span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">대기중</span></td>
+                      </tr>
+                      <tr>
+                        <td class="py-3 px-4">1102호</td>
+                        <td class="py-3 px-4">에어컨 실외기 점검 요청</td>
+                        <td class="py-3 px-4">2024-04-12</td>
+                        <td class="py-3 px-4"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">완료</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              <!-- Maintenance Schedule -->
+              <div class="glass shadow-glass rounded-xl p-6">
+                <h3 class="font-semibold text-blue-700 mb-4">정기 점검 일정</h3>
+                <div class="divide-y divide-gray-100">
+                  <div class="py-3">
+                    <div class="flex justify-between items-center">
+                      <div>
+                        <div class="font-medium">화재 감지기 점검</div>
+                        <div class="text-sm text-gray-500">월간 정기 점검</div>
+                      </div>
+                      <div class="text-sm">2024-04-22</div>
+                    </div>
+                  </div>
+                  <div class="py-3">
+                    <div class="flex justify-between items-center">
+                      <div>
+                        <div class="font-medium">엘리베이터 정비</div>
+                        <div class="text-sm text-gray-500">분기별 정기 점검</div>
+                      </div>
+                      <div class="text-sm">2024-04-25</div>
+                    </div>
+                  </div>
+                  <div class="py-3">
+                    <div class="flex justify-between items-center">
+                      <div>
+                        <div class="font-medium">정화조 청소</div>
+                        <div class="text-sm text-gray-500">6개월 정기 점검</div>
+                      </div>
+                      <div class="text-sm">2024-05-05</div>
+                    </div>
+                  </div>
+                  <div class="py-3">
+                    <div class="flex justify-between items-center">
+                      <div>
+                        <div class="font-medium">보일러 점검</div>
+                        <div class="text-sm text-gray-500">연간 정기 점검</div>
+                      </div>
+                      <div class="text-sm">2024-05-15</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-4 flex justify-center">
+                  <button class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm" title="정기 점검 일정 추가">일정 추가하기</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Reports Section -->
+          <section id="reports" class="mb-8">
+            <h2 class="text-xl font-bold mb-4 text-blue-800">보고서 생성</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <div class="glass shadow-glass rounded-xl p-6 flex flex-col items-center text-center">
+                <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-3">
+                  <i class="fa-solid fa-money-bill-trend-up text-2xl text-blue-500"></i>
+                </div>
+                <h3 class="font-semibold text-blue-700 mb-2">재정 보고서</h3>
+                <p class="text-sm text-gray-600 mb-4">월별/분기별 수입 및 지출 현황 보고서</p>
+                <button class="mt-auto px-4 py-2 bg-blue-500 text-white rounded-lg text-sm w-full" title="재정 보고서 생성">생성하기</button>
+              </div>
+              <div class="glass shadow-glass rounded-xl p-6 flex flex-col items-center text-center">
+                <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-3">
+                  <i class="fa-solid fa-users-gear text-2xl text-blue-500"></i>
+                </div>
+                <h3 class="font-semibold text-blue-700 mb-2">입주자 분석</h3>
+                <p class="text-sm text-gray-600 mb-4">입주자 현황, 변동, 만족도 조사 보고서</p>
+                <button class="mt-auto px-4 py-2 bg-blue-500 text-white rounded-lg text-sm w-full" title="입주자 분석 보고서 생성">생성하기</button>
+              </div>
+              <div class="glass shadow-glass rounded-xl p-6 flex flex-col items-center text-center">
+                <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-3">
+                  <i class="fa-solid fa-file-signature text-2xl text-blue-500"></i>
+                </div>
+                <h3 class="font-semibold text-blue-700 mb-2">계약 통계</h3>
+                <p class="text-sm text-gray-600 mb-4">계약 현황, 갱신율, 변동 추이 보고서</p>
+                <button class="mt-auto px-4 py-2 bg-blue-500 text-white rounded-lg text-sm w-full" title="계약 통계 보고서 생성">생성하기</button>
+              </div>
+              <div class="glass shadow-glass rounded-xl p-6 flex flex-col items-center text-center">
+                <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-3">
+                  <i class="fa-solid fa-screwdriver-wrench text-2xl text-blue-500"></i>
+                </div>
+                <h3 class="font-semibold text-blue-700 mb-2">시설 관리</h3>
+                <p class="text-sm text-gray-600 mb-4">민원 처리 현황 및 유지보수 이력 보고서</p>
+                <button class="mt-auto px-4 py-2 bg-blue-500 text-white rounded-lg text-sm w-full" title="시설 관리 보고서 생성">생성하기</button>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-blue-100 py-6 px-6 bg-white/70">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between space-y-2 md:space-y-0">
+      <div class="text-sm text-gray-500">&copy; 2024 오피스메이트. 모든 권리 보유.</div>
+      <div class="text-sm text-gray-500">관리자 대시보드 v2.4.1</div>
+    </div>
+  </footer>
+  
+  <script>
+    // Small stat cards
+    new Chart(document.getElementById('incomeChart').getContext('2d'), {
+      type: 'line',
+      data: { labels: ["", "", "", "", "", ""], 
+              datasets: [{ data: [74.2,75.6,76.1,77.3,78.1,78.45], 
+                          borderColor: "#3A86FF", 
+                          backgroundColor: "rgba(58,134,255,.13)", 
+                          fill:true, tension:0.4, pointRadius:0}] },
+      options: { scales:{x:{display:!1},y:{display:!1}}, 
+                plugins:{legend:{display:!1},tooltip:{enabled:!1}}, 
+                elements:{line:{borderWidth:2}} }
+    });
+
+    new Chart(document.getElementById('expenseChart').getContext('2d'), {
+      type: 'line',
+      data: { labels: ["", "", "", "", "", ""], 
+              datasets: [{ data: [13.8,13.2,12.9,13.1,13.0,12.38], 
+                          borderColor: "#EF4444", 
+                          backgroundColor: "rgba(239,68,68,.13)", 
+                          fill:true, tension:0.4, pointRadius:0}] },
+      options: { scales:{x:{display:!1},y:{display:!1}}, 
+                plugins:{legend:{display:!1},tooltip:{enabled:!1}}, 
+                elements:{line:{borderWidth:2}} }
+    });
+
+    new Chart(document.getElementById('collectionRateChart').getContext('2d'), {
+      type: 'line',
+      data: { labels: ["", "", "", "", "", ""], 
+              datasets: [{ data: [93.7,94.5,95.2,95.8,95.6,96.8], 
+                          borderColor: "#10B981", 
+                          backgroundColor: "rgba(16,185,129,.13)", 
+                          fill:true, tension:0.4, pointRadius:0}] },
+      options: { scales:{x:{display:!1},y:{display:!1}}, 
+                plugins:{legend:{display:!1},tooltip:{enabled:!1}}, 
+                elements:{line:{borderWidth:2}} }
+    });
+    
+    new Chart(document.getElementById('unpaidChart').getContext('2d'), {
+      type: 'line',
+      data: { labels: ["", "", "", "", "", ""], 
+              datasets: [{ data: [3.76,3.65,3.52,3.38,3.22,3.25], 
+                          borderColor: "#F59E0B", 
+                          backgroundColor: "rgba(245,158,11,.13)", 
+                          fill:true, tension:0.4, pointRadius:0}] },
+      options: { scales:{x:{display:!1},y:{display:!1}}, 
+                plugins:{legend:{display:!1},tooltip:{enabled:!1}}, 
+                elements:{line:{borderWidth:2}} }
+    });
+
+    // Revenue/Expense Chart
+    new Chart(document.getElementById('revenueExpenseChart').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: ["11월", "12월", "1월", "2월", "3월", "4월"],
+        datasets: [
+          { 
+            label: '수입 (백만원)', 
+            data: [74.2, 75.6, 76.1, 77.3, 78.1, 78.45], 
+            backgroundColor: "rgba(58,134,255,0.7)",
+            borderRadius: 4
+          },
+          { 
+            label: '지출 (백만원)', 
+            data: [13.8, 13.2, 12.9, 13.1, 13.0, 12.38], 
+            backgroundColor: "rgba(239,68,68,0.6)",
+            borderRadius: 4
+          },
+          {
+            label: '순이익 (백만원)',
+            data: [60.4, 62.4, 63.2, 64.2, 65.1, 66.07],
+            type: 'line',
+            borderColor: "#10B981",
+            backgroundColor: "rgba(16,185,129,0.1)",
+            borderWidth: 3,
+            pointBackgroundColor: "#10B981",
+            tension: 0.3,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              boxWidth: 12,
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          }
+        },
+        scales: {
+          x: { grid: {display: false} },
+          y: { 
+            beginAtZero: true,
+            grid: {color: "rgba(0,0,0,0.05)"}
+          }
+        }
+      }
+    });
+
+    // Income Breakdown Donut
+    new Chart(document.getElementById('incomeBreakdownChart').getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: ['임대료', '관리비', '주차료', '기타'],
+        datasets: [{
+          data: [82, 12, 4, 2],
+          backgroundColor: ['#3A86FF', '#10B981', '#F59E0B', '#8B5CF6'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        cutout: '70%',
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+
+    // Tenant Status Chart
+    new Chart(document.getElementById('tenantStatusChart').getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: ['점유 (정상)', '점유 (계약만료임박)', '공실'],
+        datasets: [{
+          data: [109, 8, 5],
+          backgroundColor: ['#3A86FF', '#F59E0B', '#E5E7EB'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        cutout: '70%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              boxWidth: 12,
+              padding: 15,
+              usePointStyle: true,
+              pointStyle: 'circle',
+              font: {
+                size: 11
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Tenant Satisfaction Line Chart
+    new Chart(document.getElementById('satisfactionChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: ['10월', '11월', '12월', '1월', '2월', '3월', '4월'],
+        datasets: [{
+          label: '입주자 만족도 (5점 만점)',
+          data: [4.0, 4.1, 4.0, 4.2, 4.2, 4.3, 4.3],
+          borderColor: '#3A86FF',
+          backgroundColor: 'rgba(58,134,255,0.1)',
+          pointBackgroundColor: '#3A86FF',
+          pointRadius: 4,
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            min: 3.0,
+            max: 5.0,
+            ticks: {
+              stepSize: 0.5
+            },
+            grid: {
+              color: "rgba(0,0,0,0.05)"
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+
+    // Contract Term Chart
+    new Chart(document.getElementById('contractTermChart').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: ['1년', '2년', '3년 이상'],
+        datasets: [{
+          data: [42, 68, 7],
+          backgroundColor: ['#3A86FF', '#10B981', '#8B5CF6'],
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: "rgba(0,0,0,0.05)"
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+
+    // Contract Expiry Chart
+    new Chart(document.getElementById('contractExpiryChart').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: ['4월', '5월', '6월', '7월', '8월', '9월'],
+        datasets: [{
+          data: [3, 5, 4, 7, 6, 8],
+          backgroundColor: '#3A86FF',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: "rgba(0,0,0,0.05)"
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+
+    // Menu item click event
+    document.querySelectorAll('.dashboard-menu-item').forEach(item => {
+      item.addEventListener('click', function() {
+        document.querySelectorAll('.dashboard-menu-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html> 
